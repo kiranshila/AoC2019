@@ -1,5 +1,5 @@
 function fuelRequirement1(mass)
-    return floor(mass / 3) - 2
+    floor(mass / 3) - 2
 end
 
 @show sum([fuelRequirement1(parse(Float64,i)) for i in readlines("input1.txt")])
