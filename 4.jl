@@ -42,14 +42,14 @@ end
 
 function solve(range)
     d = zeros(Int,6)
-    part1 = fill(false,length(range))
-    part2 = fill(false,length(range))
-    for (i,digit) in enumerate(range)
+    part1 = 0
+    part2 = 0
+    for digit in range
         digits!(d,digit)
-        part1[i] = checkDigits1(d)
-        part2[i] = checkDigits2(d)
+        part1 += checkDigits1(d)
+        part2 += checkDigits2(d)
     end
-    return sum(part1), sum(part2)
+    return part1, part2
 end
 
 @show solve(125730:579381)
