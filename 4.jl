@@ -1,7 +1,16 @@
 # Brute Force Solution
+function isackwardsorted(x) # Base.issorted was really slow for some reason?
+    for i in 1:length(x)-1
+        if x[i] < x[i+1]
+            return false
+        end
+    end
+    return true
+end
+
 function checkDigits1(d)
     # Digits ascend
-    if !issorted(reverse(d))
+    if !isackwardsorted(d)
         return false
     else
         for i in 1:length(d)-1
@@ -15,12 +24,11 @@ end
 
 function checkDigits2(d)
     # Digits ascend
-    if !issorted(reverse(d))
+    if !isackwardsorted(d)
         return false
     else
-        i = length(d)
         repeatCount = 1
-        while i >= 2
+        for i in length(d):-1:2
             if d[i] == d[i-1]
                 repeatCount += 1
             elseif repeatCount == 2
@@ -28,22 +36,13 @@ function checkDigits2(d)
             else
                 repeatCount = 1
             end
-            i -= 1
         end
         return repeatCount == 2
     end
 end
 
-function solve()
-    countPart1 = 0
-    countPart2 = 0
-    for i in 125730:579381
-        d = digits(i)
-        checkDigits1(d) ? countPart1 += 1 : nothing
-        checkDigits2(d) ? countPart2 += 1 : nothing
-    end
-    return countPart1,countPart2
-end
+part1(range) = sum(@. checkDigits1(digits(range)))
+part2(range) = sum(@. checkDigits2(digits(range)))
 
-
-@show solve()
+@show part1(125730:579381)
+@show part2(125730:579381)
