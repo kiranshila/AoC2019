@@ -10,13 +10,31 @@ function instruction(x::Int)
     instruction(d[1]+10*d[2],d[3:end])
 end
 
-# Not in base yet
+# Not in base yet - Just to make input nice
 function input(prompt::String="")::String
     print(prompt)
     return chomp(readline())
 end
 
-value(program::OffsetArray,input,mode) = if mode == 1 return input else return program[input] end
+function value(program::OffsetArray,input,mode) 
+    if mode == 1 # Immediate
+        return input 
+    elseif mode == 0 # Position
+        return program[input] 
+    end
+end
+
+function values(program,inst,i)
+    # This will determine how many parameters to take
+    if inst.opcode in [1,2,5,6,7,8]
+        a = value(program,program[i+1],inst.mode[1])
+        b = value(program,program[i+2],inst.mode[2])
+        return a,b
+    elseif inst.opcode in [4]
+        return value(program,program[i+1],inst.mode[1])
+    end
+end
+
 
 function runIntcode!(program::OffsetArray)
     i = 0
@@ -25,17 +43,11 @@ function runIntcode!(program::OffsetArray)
         inst = instruction(program[i])
         if inst.opcode == 1
             # add - two inputs and an output
-            a = value(program,program[i+1],inst.mode[1])
-            b = value(program,program[i+2],inst.mode[2])
-            program[program[i+3]] = a + b
-            # Move PC
+            program[program[i+3]] = +(values(program,inst,i)...)
             i += 4
         elseif inst.opcode == 2
             # mul - two inputs and an output
-            a = value(program,program[i+1],inst.mode[1])
-            b = value(program,program[i+2],inst.mode[2])
-            program[program[i+3]] = a * b
-            # Move PC
+            program[program[i+3]] = *(values(program,inst,i)...)
             i += 4
         elseif inst.opcode == 3
             # read
@@ -43,41 +55,23 @@ function runIntcode!(program::OffsetArray)
             i += 2
         elseif inst.opcode == 4
             # write
-            println("Output: $(value(program,program[i+1],inst.mode[1]))")
+            println("Output: $(values(program,inst,i))")
             i += 2
         elseif inst.opcode == 5
             # jmp-if-true
-            if value(program,program[i+1],inst.mode[1]) != 0
-                i = value(program,program[i+2],inst.mode[2])
-            else
-                # Move the PC
-                i += 3
-            end
+            a,b = values(program,inst,i)
+            a != 0 ? i = b : i += 3
         elseif inst.opcode == 6
             # jmp-if-false
-            if value(program,program[i+1],inst.mode[1]) == 0
-                i = value(program,program[i+2],inst.mode[2])
-            else
-                # Move the PC
-                i += 3
-            end
+            a,b = values(program,inst,i)
+            a == 0 ? i = b : i += 3
         elseif inst.opcode == 7
             # less
-            if value(program,program[i+1],inst.mode[1]) < value(program,program[i+2],inst.mode[2])
-                program[program[i+3]] = 1
-            else
-                program[program[i+3]] = 0
-            end
-            # Move the PC
+            program[program[i+3]] = Int(<(values(program,inst,i)...))
             i += 4
         elseif inst.opcode == 8
-            # less
-            if value(program,program[i+1],inst.mode[1]) == value(program,program[i+2],inst.mode[2])
-                program[program[i+3]] = 1
-            else
-                program[program[i+3]] = 0
-            end
-            # Move the PC
+            # eql
+            program[program[i+3]] = Int(==(values(program,inst,i)...))
             i += 4
         elseif inst.opcode == 99
             # exit
