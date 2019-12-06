@@ -12,12 +12,10 @@ function buildOrbits(orbitString)
     for line in split(orbitString,'\n')
         orbits,thing = split(line,')')
         if !haskey(allObjects,thing)
-            thingObject = CelestialObject(thing)
-            allObjects[thing] = thingObject
+            allObjects[thing] = CelestialObject(thing)
         end
         if !haskey(allObjects,orbits)
-            orbitsObject = CelestialObject(orbits)
-            allObjects[orbits] = orbitsObject
+            allObjects[orbits] = CelestialObject(orbits)
         end
         allObjects[thing].orbits = allObjects[orbits]
         append!(allObjects[orbits].satellites,[allObjects[thing]])
@@ -41,13 +39,7 @@ function listParents(object::CelestialObject)
     end
 end
 
-function part1(objects)
-    orbitCount = 0
-    for object in values(objects)
-        orbitCount += countOrbits(object)
-    end
-    return orbitCount
-end
+part1(objects) = sum([countOrbits(object) for object in values(objects)])
 
 allObjects = buildOrbits(read("6.txt",String))
 @show part1(allObjects)
