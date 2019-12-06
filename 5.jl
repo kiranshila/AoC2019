@@ -42,11 +42,11 @@ function runIntcode!(program::OffsetArray)
         # First is an instruction
         inst = instruction(program[i])
         if inst.opcode == 1
-            # add - two inputs and an output
+            # add
             program[program[i+3]] = +(values(program,inst,i)...)
             i += 4
         elseif inst.opcode == 2
-            # mul - two inputs and an output
+            # mul
             program[program[i+3]] = *(values(program,inst,i)...)
             i += 4
         elseif inst.opcode == 3
