@@ -10,12 +10,6 @@ function instruction(x::Int)
     instruction(d[1]+10*d[2],d[3:end])
 end
 
-# Not in base yet - Just to make input nice
-function input(prompt::String="")::String
-    print(prompt)
-    return chomp(readline())
-end
-
 function value(program::OffsetArray,input,mode) 
     if mode == 1 # Immediate
         return input 
@@ -35,9 +29,7 @@ function vals(program,inst,i)
     end
 end
 
-
-function runIntcode!(program::OffsetArray,i = 0)
-    output = []
+function runIntcode!(program::OffsetArray,input,output,i = 0)
     while i < length(program)
         # First is an instruction
         inst = instruction(program[i])
@@ -51,20 +43,14 @@ function runIntcode!(program::OffsetArray,i = 0)
             i += 4
         elseif inst.opcode == 3
             # read
-            if length(args) == 0
-                program[program[i+1]] = parse(Int,input("Input: "))
-            else
-                program[program[i+1]] = args[argPointer]
-                argPointer += 1
+            if isempty(input)
+                return i # Waiting for next input
             end
+            program[program[i+1]] = pop!(input)
             i += 2
         elseif inst.opcode == 4
             # write
-            if length(args) == 0
-                println("Output: $(vals(program,inst,i))")
-            else
-                append!(output,vals(program,inst,i))
-            end
+            pushfirst!(output, vals(program,inst,i))
             i += 2
         elseif inst.opcode == 5
             # jmp-if-true
@@ -86,13 +72,10 @@ function runIntcode!(program::OffsetArray,i = 0)
             # exit
             break
         else
-            print("Invalid Intcode")
+            println("Invalid Intcode at position $i with instruction $inst")
+            return -99
             break
         end
     end
-    return output
+    return -1
 end
-
-#program = OffsetArray([parse(Int64,i) for i in split(readline("5.txt"),',')],-1)
-
-#runIntcode!(program)
