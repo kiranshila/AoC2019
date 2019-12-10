@@ -1,7 +1,8 @@
 include("IntCode.jl")
 using Combinatorics
 
-program = OffsetArray([parse(Int64,i) for i in split(readline("7.txt"),',')],-1)
+data = [parse(Int64,i) for i in split(readline("7.txt"),',')]
+program = IntCode(data)
 
 function maximizeThrust(program)
     program = deepcopy(program)
@@ -10,11 +11,11 @@ function maximizeThrust(program)
     for phases in permutations(0:4)
         output = Int[]
         A,B,C,D,E = [deepcopy(program) for _ in 1:5]
-        runIntcode!(A,[0,phases[1]],output)
-        runIntcode!(B,[output[1],phases[2]],output)
-        runIntcode!(C,[output[1],phases[3]],output)
-        runIntcode!(D,[output[1],phases[4]],output)
-        runIntcode!(E,[output[1],phases[5]],output)
+        runIntcode!(A,input = [0,phases[1]], output = output)
+        runIntcode!(B,input = [output[1],phases[2]], output = output)
+        runIntcode!(C,input = [output[1],phases[3]], output = output)
+        runIntcode!(D,input = [output[1],phases[4]], output = output)
+        runIntcode!(E,input = [output[1],phases[5]], output = output)
         if output[1] > bestThrust
             bestThrust = output[1]
             bestPhase = phases
@@ -33,7 +34,6 @@ function maximizeFeedbackThrust(program)
         input = 0
         A,B,C,D,E = [deepcopy(program) for _ in 1:5]
 
-        lastI = fill(0,5)
         inputs = fill(Int[],5)
         outputs = fill(Int[],5)
 
@@ -45,12 +45,12 @@ function maximizeFeedbackThrust(program)
         inputs[5] = outputs[4] = [phases[5]]
 
         # Run until completion
-        while all(i->i != -1, lastI)
-            lastI[1] = runIntcode!(A,inputs[1],outputs[1],lastI[1])
-            lastI[2] = runIntcode!(B,inputs[2],outputs[2],lastI[2])
-            lastI[3] = runIntcode!(C,inputs[3],outputs[3],lastI[3])
-            lastI[4] = runIntcode!(D,inputs[4],outputs[4],lastI[4])
-            lastI[5] = runIntcode!(E,inputs[5],outputs[5],lastI[5])
+        while !all(i->i.isComplete,[A,B,C,D,E])
+            runIntcode!(A,input = inputs[1],output = outputs[1])
+            runIntcode!(B,input = inputs[2],output = outputs[2])
+            runIntcode!(C,input = inputs[3],output = outputs[3])
+            runIntcode!(D,input = inputs[4],output = outputs[4])
+            runIntcode!(E,input = inputs[5],output = outputs[5])
         end
 
         if outputs[5][1] > bestThrust

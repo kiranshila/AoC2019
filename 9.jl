@@ -1,6 +1,6 @@
 include("IntCode.jl")
 
-data = [parse(Int64,i) for i in split(readline("5.txt"),',')]
+data = [parse(Int64,i) for i in split(readline("9.txt"),',')]
 
 # Part 1
 program = IntCode(data)
@@ -11,7 +11,8 @@ runIntcode!(program,input=input,output=output)
 
 # Part 2
 program = IntCode(data)
-input = [5]
+input = [2]
 output = []
 runIntcode!(program,input=input,output=output)
 @show output
+
